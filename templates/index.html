@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+<div class="mb-3">
+    <p>{{user}}<p>
+</div>
+<div class="mb-3">
+    <h1>New ethereum tokens</p>
+</div>
+
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Contract</th>
+        <th scope="col">Token Name</th>
+        <th scope="col">Liqudity(ETH)</th>
+        <th scope="col">Time created</th>
+
+      </tr>
+    </thead>
+    <tbody>
+        {%for token in tokenDict%}
+        <tr>
+          <td>{{tokenDict[token][0]}}</td>
+          <td>{{tokenDict[token][1]}}</td>
+          <td>{{tokenDict[token][2]}}</td>
+          <td>{{tokenDict[token][3]}}</td>
+        </tr>
+        {%endfor%}
+
+ 
+    </tbody>
+  </table>
+  
+{% endblock %}
