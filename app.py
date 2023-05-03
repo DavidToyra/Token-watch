@@ -28,6 +28,8 @@ version = 2
 
 uniswap = Uniswap(address = None, private_key = None, version=version, provider = provider)
 WRAPPED_ETHER = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+# How many blocks to search
+BLOCK_LENGTH = 500
 
 @app.after_request
 def after_request(response):
@@ -39,23 +41,31 @@ def after_request(response):
 
 @app.route("/")
 def index():
+    return render_template("layout.html")
+
+@app.route("/eth")
+def eth():
     eth = Etherscan("19ZZF2YPD4AF8X6E42C1NGFX9W32ZMWZV4")
     current_GMT = time.gmtime()
 
-    # ts stores timestamp
+    # Store timestamp
     ts = calendar.timegm(current_GMT)
     print("timestamp: ", ts)
     
+
+    # Get latest block
     currentBlock = int(eth.get_block_number_by_timestamp(timestamp = ts, closest = "before"))
     print("current block:", currentBlock)
 
     timeList =[]
 
-    #Get list of the latest
-    internal_txs = eth.get_internal_txs_by_address(address = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", startblock = currentBlock-500, endblock = currentBlock, sort = "desc")
+    # Get list of the latest factory transactions
+    internal_txs = eth.get_internal_txs_by_address(address = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", startblock = currentBlock-BLOCK_LENGTH, endblock = currentBlock, sort = "desc")
     print("inern txs done")
     txHashList = []
     pairList = []
+
+    # Loop through the list and find the transactions that creates contracts
     for tx in internal_txs:
         print(tx["type"])
         if tx["type"] == "create2":
@@ -65,9 +75,15 @@ def index():
     print("append to first hashlist done")
 
     ethLiqList = []
+    # Get the ETH in their liquidity pools
     for pair in pairList:
         start = time.time()
-        ethLiq = int(eth.get_acc_balance_by_token_and_contract_address(contract_address = WRAPPED_ETHER, address = pair))
+        try:
+            ethLiq = int(eth.get_acc_balance_by_token_and_contract_address(contract_address = WRAPPED_ETHER, address = pair))
+        except Exception as err:
+            print(err)
+            continue
+        
         print("get_acc_balance_by_token_and_contract_address")
         end = time.time()
         print(end - start)
@@ -83,6 +99,8 @@ def index():
     print("length of liqlist: ", len(ethLiqList))
     contractList = []
     tokenDict = dict()
+
+    # Get the contract from the transaction ID
     for tx in txHashList:
         start = time.time()
         receipttx = eth.get_proxy_transaction_receipt(txhash = tx)
@@ -95,11 +113,16 @@ def index():
 
     x = 0
 
+    # Check if the contracts exist and removes them from the dict if they do not
     for contract in contractList:
         print(contract)
         if contract != None:
             start = time.time()
-            token = uniswap.get_token(address = contract)
+            try:
+                token = uniswap.get_token(address = contract)
+            except Exception as err:
+                print(err)
+                continue
             print("uniswap.get_token")
             end = time.time()
             print(end - start)
@@ -115,6 +138,7 @@ def index():
             del ethLiqList[x]
             del timeList[x]
 
+    # Render the html
     return render_template("index.html", tokenDict = tokenDict)
 
 
