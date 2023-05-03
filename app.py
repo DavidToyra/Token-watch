@@ -22,8 +22,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 #Configure ethereum node
-#web3 = Web3(Web3.HTTPProvider(https://mainnet.infura.io/v3/a2fad1a2e6324fc1a61897bf4b807b0e))
-provider = "https://mainnet.infura.io/v3/a2fad1a2e6324fc1a61897bf4b807b0e"
+provider = ETH PROVIDER API KEY
 version = 2
 
 uniswap = Uniswap(address = None, private_key = None, version=version, provider = provider)
