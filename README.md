@@ -4,7 +4,7 @@ API calls takes a long time, approximately 30 seconds for 500 blocks.
 
 ## Install
 1.1 Go to main directory<br>
-1.2 Get an API key for ethereum provider
+1.2 Get an API key for ethereum provider<br>
 1.3 Run ```flask run```
 
 ## Requirements
